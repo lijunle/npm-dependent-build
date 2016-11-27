@@ -2,7 +2,13 @@
   "name": "dependent-build",
   "description": "Trigger dependent build by configuration.",
   "version": "0.0.1",
+  "bin": {
+    "dependent-build": "./bin.js"
+  },
   "scripts": {
-    "test": "echo dependent-build"
+    "test": "node ./bin.js"
+  },
+  "dependencies": {
+    "js-yaml": "^3.7.0"
   }
 }
