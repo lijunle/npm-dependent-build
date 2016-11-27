@@ -80,6 +80,14 @@ function runBatches(logger, workingFolder, batches) {
   return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), workingFolder, batches[0]); // TODO multiple repos
 }
 
+function npmLink(logger, cwd) {
+  return runScript(logger.child({ _npmLink: 'runScript' }), cwd, 'npm link');
+}
+
+function npmUnlink(logger, cwd) {
+  return runScript(logger.child({ _npmUnlink: 'runScript' }), cwd, 'npm unlink');
+}
+
 function dependentBuild(logger, folderPath) {
   const cwd = process.cwd();
   logger.info({ cwd }, 'Current working directory');
@@ -106,8 +114,11 @@ function dependentBuild(logger, folderPath) {
   logger.trace({ batches }, 'Arrange config to batches (repo-scripts pairs)');
 
   return createFolder(logger.child({ _dependentBuild: 'createFolder' }), workingFolder)
+    .then(() => npmLink(logger.child({ _dependentBuild: 'npmLink' }), workingFolder))
     .then(() => cloneRepos(logger.child({ _dependentBuild: 'cloneRepos' }), workingFolder, repos))
-    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), workingFolder, batches));
+    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), workingFolder, batches))
+    .then(() => npmUnlink(logger.child({ _dependentBuild: 'npmUnlink' }), workingFolder),
+      e => npmUnlink(logger.child({ _dependentBuild: 'npmUnlink' }), workingFolder).then(() => { throw e; }));
 }
 
 module.exports = dependentBuild;
