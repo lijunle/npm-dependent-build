@@ -52,7 +52,7 @@ function runScript(logger, cwd, script) {
 }
 
 function runScripts(logger, workingFolder, scripts) {
-  let lastScript = Promise.resolve();
+  var lastScript = Promise.resolve(); // eslint-disable-line no-var
 
   scripts.forEach((script, index) => {
     const childLogger = logger.child({ _runScripts: ['runScript', index] });
