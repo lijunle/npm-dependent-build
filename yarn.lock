@@ -1038,6 +1038,10 @@ parse-json@^2.1.0, parse-json@^2.2.0:
   dependencies:
     error-ex "^1.2.0"
 
+patch-version@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/patch-version/-/patch-version-0.1.1.tgz#a02ae66f3696724851ae69612d4ec4c5cdb7fc0e"
+
 path-exists@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/path-exists/-/path-exists-2.1.0.tgz#0feb6c64f0fc518d9a754dd5efb62c7022761f4b"

@@ -11,3 +11,23 @@ script:
   - npm run depcheck
   - npm run lint
   - npm run test
+
+before_deploy:
+  - ./node_modules/.bin/patch-version
+
+deploy:
+  - provider: npm
+    skip_cleanup: true
+    email: lijunle@gmail.com
+    api_key:
+      secure: oJytZZydG6GhDueF9HR3uUQvlPEseuvaa8JgrpCbQPgIM0TbGM1jpkRLggdj3DeceHvtvqpxaB1zYRNFPWrZ53fZ3DF51JRkniftoXtjmSPXa5YPHlruJs60OfTppc/rlWeKlbABBHXOJYPX5KhAP5PVz623cVExAGVtmzFT68OwFdGrm6tBzOhdzA0HfxqSTdppQQ5xH5tM6TKFzjEmYd/ct4b33Sy1QbSObkKsbAirZla31Dd4plaR9hSd2A8o+7hwecuTTh/hdIR954tQxRTXob1jSewUR2leuxFbFYKwLnlQJO6bdfOHGPiKk4nASj0mfGsZlrTBSzLwR0lektslPrrxfvd+GwKO/cglWJfhoTGCZu/N6O2FjWEhDqLGbG+0YPQopLlAMZJ9bLsOLpIs5juQjtzK61A5kw57vTxU+nJk2+frc+Xk1M3Oz62XBTlpEziyzaUEfAgZLsjlvH4f5x4FzVE+yHVJklOSFfehkFWfAfFtpozkuKH6O9kk7wKOa10GEwKZPjBQE74Gxpb3PwA3/BsD9u8YEU7cYjFWSViIOy+XVhULFIQwzgvKb60W7HeT9mMrgsgoZbZwtHWqJrggG/xCY4Z8vNHo5tmmDgwNbTOTPPApjYV7NAMhuEKBJr5yKxWoxmY0BIgCW7fuFvlA/yvT955EGjQXw=
+    on:
+      tags: true
+      node: 6
+  - provider: releases
+    skip_cleanup: true
+    api_key:
+      secure: kka7agH7sLzS5yNyHB/nnHgwuDF8+vecfzke9MNdDgQdpf0yzOOcHzv92QeOK7x94YvlthfHQfZH7qFsQTeKL3XXDuBuB4iTqrHNBJaYybuhFci+v6hPqQUypLeoHfYtndRfPE/hcP9F8kKVTjKhrczUNOVgdMxLrF9n6PZv7apjm2GMRcIwXKcHu1FCG74+yosu61JeY2tn6kR0aDz3ITcI2S8hsLz5Nf8YjvXYKQoZbBBEUcT1/G1TMZlfJOYyd2tJ9oXLv81bXiURpIJapDuZYFUasUuaiPqzDSiBBNuUFl38VrPyDYs5dMvwqKEkjQRWnLpVzMIULr5hK04UKoxTiwC0MpAkKWil1v+O7YjngT22J4/q7sDIBAIs0Api99BS+8lmx6lJ0qPZBXmFTqUHDYVA1R8JXV3mbiREZfL74KeYkSHP8RCoGBX05tCjxQTDE3nuxOOnrSjKtufCztW2Ua3U1sTPhh5wfsbCtag/52/V4tHWFlL/p1WddURBF8ZfIWFQMcin5HmAUzyYFBZ4ECOmLJL6iYYI/8kbQJprRLHrHugRxu7Dr0Uh6pO4zdD/UOnNjvWaug8f5ph5ugIOhf5UlFgCVDGgEy5TWWCPDOKmlPsflOYyjtVnA6YwqNvIyRx/9DA2YV/UWHyLbNPi4jyWRNMWDhuGDJoZHV8=
+    on:
+      tags: true
+      node: 6
