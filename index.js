@@ -62,22 +62,25 @@ function runScripts(logger, workingFolder, scripts) {
   return lastScript;
 }
 
-function runBatch(logger, workingFolder, batch) {
+function runBatch(logger, workingFolder, packageName, batch) {
   const repo = batch.repo;
   logger.info({ repo }, 'Run batch for repo');
 
   const scripts = batch.scripts;
   logger.debug({ scripts }, 'Scripts from batch');
 
+  const fullScripts = [`npm link ${packageName}`, 'npm install'].concat(scripts);
+  logger.trace({ fullScripts }, 'Full scripts after patch');
+
   const repoName = path.basename(repo);
   const cwd = path.resolve(workingFolder, repoName);
   logger.info({ cwd }, 'Working directory for batch');
 
-  return runScripts(logger.child({ _runBatch: 'runScripts' }), cwd, scripts);
+  return runScripts(logger.child({ _runBatch: 'runScripts' }), cwd, fullScripts);
 }
 
-function runBatches(logger, workingFolder, batches) {
-  return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), workingFolder, batches[0]); // TODO multiple repos
+function runBatches(logger, workingFolder, packageName, batches) {
+  return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), workingFolder, packageName, batches[0]); // TODO multiple repos
 }
 
 function npmLink(logger, cwd) {
@@ -94,6 +97,11 @@ function dependentBuild(logger, folderPath) {
 
   const rootFolder = path.resolve(cwd, folderPath);
   logger.debug({ rootFolder }, 'Resolved root directory');
+
+  // TODO optimize on readFileSync
+  const packageFilePath = path.resolve(rootFolder, 'package.json');
+  const packageName = JSON.parse(fs.readFileSync(packageFilePath)).name;
+  logger.info({ packageName }, 'Package name');
 
   const workingFolder = path.resolve(rootFolder, 'dependent-build');
   logger.debug({ workingFolder }, 'Dependent-build folder');
@@ -116,7 +124,7 @@ function dependentBuild(logger, folderPath) {
   return createFolder(logger.child({ _dependentBuild: 'createFolder' }), workingFolder)
     .then(() => npmLink(logger.child({ _dependentBuild: 'npmLink' }), workingFolder))
     .then(() => cloneRepos(logger.child({ _dependentBuild: 'cloneRepos' }), workingFolder, repos))
-    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), workingFolder, batches))
+    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), workingFolder, packageName, batches))
     .then(() => npmUnlink(logger.child({ _dependentBuild: 'npmUnlink' }), workingFolder),
       e => npmUnlink(logger.child({ _dependentBuild: 'npmUnlink' }), workingFolder).then(() => { throw e; }));
 }
