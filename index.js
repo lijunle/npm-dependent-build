@@ -32,6 +32,54 @@ function cloneRepos(logger, workingFolder, repos) {
   return cloneRepo(logger.child({ _cloneRepos: ['cloneRepo', 0] }), workingFolder, repos[0]); // TODO multiple repos
 }
 
+function runScript(logger, cwd, script) {
+  return new Promise((resolve, reject) => {
+    logger.info({ cwd, script }, 'Start to run script under working directory');
+    const exec = childProcess.exec(script, { cwd });
+    exec.stdout.pipe(process.stdout);
+    exec.stderr.pipe(process.stderr);
+    exec.on('error', reject);
+    exec.on('exit', (code) => {
+      if (code) {
+        logger.error('Run script failed');
+        reject(`Execute script exit with ${code}`);
+      } else {
+        logger.info('Run script successfully');
+        resolve();
+      }
+    });
+  });
+}
+
+function runScripts(logger, workingFolder, scripts) {
+  let lastScript = Promise.resolve();
+
+  scripts.forEach((script, index) => {
+    const childLogger = logger.child({ _runScripts: ['runScript', index] });
+    lastScript = lastScript.then(() => runScript(childLogger, workingFolder, script));
+  });
+
+  return lastScript;
+}
+
+function runBatch(logger, workingFolder, batch) {
+  const repo = batch.repo;
+  logger.info({ repo }, 'Run batch for repo');
+
+  const scripts = batch.scripts;
+  logger.debug({ scripts }, 'Scripts from batch');
+
+  const repoName = path.basename(repo);
+  const cwd = path.resolve(workingFolder, repoName);
+  logger.info({ cwd }, 'Working directory for batch');
+
+  return runScripts(logger.child({ _runBatch: 'runScripts' }), cwd, scripts);
+}
+
+function runBatches(logger, workingFolder, batches) {
+  return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), workingFolder, batches[0]); // TODO multiple repos
+}
+
 function dependentBuild(logger, folderPath) {
   const cwd = process.cwd();
   logger.info({ cwd }, 'Current working directory');
@@ -58,7 +106,8 @@ function dependentBuild(logger, folderPath) {
   logger.trace({ batches }, 'Arrange config to batches (repo-scripts pairs)');
 
   return createFolder(logger.child({ _dependentBuild: 'createFolder' }), workingFolder)
-    .then(() => cloneRepos(logger.child({ _dependentBuild: 'cloneRepos' }), workingFolder, repos));
+    .then(() => cloneRepos(logger.child({ _dependentBuild: 'cloneRepos' }), workingFolder, repos))
+    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), workingFolder, batches));
 }
 
 module.exports = dependentBuild;
