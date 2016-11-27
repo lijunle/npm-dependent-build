@@ -1,2 +1,2 @@
 https://github.com/lijunle/npm-dependent-build-test:
-  - npm test -- .
+  - npm test -- ${HOST_DIR}

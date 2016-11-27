@@ -56,7 +56,8 @@ function runScripts(logger, workingFolder, scripts) {
 
   scripts.forEach((script, index) => {
     const childLogger = logger.child({ _runScripts: ['runScript', index] });
-    lastScript = lastScript.then(() => runScript(childLogger, workingFolder, script));
+    const patchedScript = script.replace(/\$\{HOST_DIR\}/g, JSON.stringify(process.cwd()));
+    lastScript = lastScript.then(() => runScript(childLogger, workingFolder, patchedScript));
   });
 
   return lastScript;
