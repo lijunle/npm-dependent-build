@@ -6,6 +6,7 @@
     "dependent-build": "./bin.js"
   },
   "scripts": {
+    "clean": "del-cli dependent-build",
     "lint": "eslint .",
     "test": "node ./bin.js"
   },
@@ -13,6 +14,7 @@
     "js-yaml": "^3.7.0"
   },
   "devDependencies": {
+    "del-cli": "^0.2.0",
     "eslint": "^3.11.0",
     "eslint-config-airbnb-base": "^10.0.1",
     "eslint-plugin-import": "^2.2.0"
