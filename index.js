@@ -7,7 +7,7 @@ function dependentBuild(folderPath) {
   const configPath = path.resolve(cwd, folderPath, 'dependent-build.yml');
   const configContent = fs.readFileSync(configPath, 'utf-8');
   const config = yaml.safeLoad(configContent);
-  console.log(config);
+  console.log(config); // eslint-disable-line no-console
 }
 
 module.exports = dependentBuild;
