@@ -3,7 +3,8 @@
   "description": "Trigger dependent build by configuration.",
   "version": "0.0.1",
   "bin": {
-    "dependent-build": "./bin.js"
+    "dependent-build": "./bin.js",
+    "dependent-patch-package": "./patch-package.js"
   },
   "scripts": {
     "clean": "del-cli dependent-build",
