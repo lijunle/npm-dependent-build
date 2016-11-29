@@ -70,14 +70,11 @@ function runBatch(logger, workingFolder, packageName, batch) {
   const scripts = batch.scripts;
   logger.debug({ scripts }, 'Scripts from batch');
 
-  const fullScripts = [`npm link ${packageName}`, 'npm install'].concat(scripts);
-  logger.trace({ fullScripts }, 'Full scripts after patch');
-
   const repoName = path.basename(repo);
   const cwd = path.resolve(workingFolder, repoName);
   logger.info({ cwd }, 'Working directory for batch');
 
-  return runScripts(logger.child({ _runBatch: 'runScripts' }), cwd, fullScripts);
+  return runScripts(logger.child({ _runBatch: 'runScripts' }), cwd, scripts);
 }
 
 function runBatches(logger, workingFolder, packageName, batches) {
