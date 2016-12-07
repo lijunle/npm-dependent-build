@@ -8,9 +8,9 @@ node_js:
   - 7
 
 script:
-  - npm run depcheck
-  - npm run lint
-  - npm run test
+  - yarn run depcheck
+  - yarn run lint
+  - yarn run test
 
 before_deploy:
   - ./node_modules/.bin/patch-version

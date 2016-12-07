@@ -1,4 +1,4 @@
 https://github.com/lijunle/npm-dependent-build-test:
   - node ${HOST_DIR}/patch-package.js
-  - npm install
-  - npm test -- ${HOST_DIR}
+  - yarn install
+  - yarn test -- ${HOST_DIR}

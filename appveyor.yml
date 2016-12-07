@@ -6,12 +6,11 @@ environment:
 
 install:
   - ps: Install-Product node $env:nodejs_version
-  - npm -g install npm@latest && set PATH=%APPDATA%\npm;%PATH%
-  - npm install
+  - yarn install
 
 test_script:
-  - npm run depcheck
-  - npm run lint
-  - npm run test
+  - yarn run depcheck
+  - yarn run lint
+  - yarn run test
 
 build: off
