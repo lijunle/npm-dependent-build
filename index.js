@@ -52,19 +52,19 @@ function runScript(logger, dependentDir, env, script) {
   });
 }
 
-function runScripts(logger, dependentDir, env, scripts) {
+function runScripts(logger, dependentDir, hostDir, env, scripts) {
   var lastScript = Promise.resolve(); // eslint-disable-line no-var
 
   scripts.forEach((script, index) => {
     const childLogger = logger.child({ _runScripts: ['runScript', index] });
-    const patchedScript = script.replace(/\$\{HOST_DIR\}/g, JSON.stringify(process.cwd()));
+    const patchedScript = script.replace(/\$\{HOST_DIR\}/g, JSON.stringify(hostDir));
     lastScript = lastScript.then(() => runScript(childLogger, dependentDir, env, patchedScript));
   });
 
   return lastScript;
 }
 
-function runBatch(logger, repoDir, env, packageName, batch) {
+function runBatch(logger, repoDir, hostDir, env, packageName, batch) {
   const dependent = batch.repo;
   logger.info({ dependent }, 'Run batch for dependent project');
 
@@ -75,11 +75,11 @@ function runBatch(logger, repoDir, env, packageName, batch) {
   const dependentDir = path.resolve(repoDir, dependentName);
   logger.info({ dependentName, dependentDir }, 'Dependent project name and directory');
 
-  return runScripts(logger.child({ _runBatch: 'runScripts' }), dependentDir, env, scripts);
+  return runScripts(logger.child({ _runBatch: 'runScripts' }), dependentDir, hostDir, env, scripts);
 }
 
-function runBatches(logger, repoDir, env, packageName, batches) {
-  return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), repoDir, env, packageName, batches[0]); // TODO multiple repos
+function runBatches(logger, repoDir, hostDir, env, packageName, batches) {
+  return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), repoDir, hostDir, env, packageName, batches[0]); // TODO multiple repos
 }
 
 function dependentBuild(logger, hostPath) {
@@ -119,7 +119,7 @@ function dependentBuild(logger, hostPath) {
 
   return createFolder(logger.child({ _dependentBuild: 'createFolder' }), repoDir)
     .then(() => cloneRepos(logger.child({ _dependentBuild: 'cloneRepos' }), repoDir, repos))
-    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), repoDir, env, packageName, batches));
+    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), repoDir, hostDir, env, packageName, batches));
 }
 
 module.exports = dependentBuild;
