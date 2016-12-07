@@ -19,7 +19,7 @@ function cloneRepo(logger, cwd, repo) {
     clone.on('exit', (code) => {
       if (code) {
         logger.error({ code }, 'Git clone failed');
-        reject(`Clone ${repo} exit code with ${code}`);
+        reject(new Error(`Clone ${repo} exit code with ${code}`));
       } else {
         logger.info('Git clone successfully');
         resolve();
@@ -42,7 +42,7 @@ function runScript(logger, cwd, script) {
     exec.on('exit', (code) => {
       if (code) {
         logger.error('Run script failed');
-        reject(`Execute script exit with ${code}`);
+        reject(new Error(`Execute script exit with ${code}`));
       } else {
         logger.info('Run script successfully');
         resolve();
