@@ -1,4 +1,5 @@
 https://github.com/lijunle/npm-dependent-build-test:
+  - eslint . # ESLint command is from host bin directory
   - node ${HOST_DIR}/patch-package.js
   - yarn install
   - yarn test -- ${HOST_DIR}
