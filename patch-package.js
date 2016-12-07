@@ -3,7 +3,7 @@ const path = require('path');
 
 function patch(packageJson, depName, hostPackageName) {
   if (packageJson[depName] && packageJson[depName][hostPackageName]) {
-    packageJson[depName][hostPackageName] = '../../'; // eslint-disable-line no-param-reassign
+    packageJson[depName][hostPackageName] = 'file:../../'; // eslint-disable-line no-param-reassign
   }
 }
 
