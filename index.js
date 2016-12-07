@@ -41,6 +41,7 @@ function runScript(logger, dependentDir, env, script) {
     exec.stderr.pipe(process.stderr);
     exec.on('error', reject);
     exec.on('exit', (code) => {
+      logger.debug({ code }, 'Script finished with exit code');
       if (code) {
         logger.error('Run script failed');
         reject(new Error(`Execute script exit with ${code}`));
