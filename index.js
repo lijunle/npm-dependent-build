@@ -32,10 +32,11 @@ function cloneRepos(logger, workingFolder, repos) {
   return cloneRepo(logger.child({ _cloneRepos: ['cloneRepo', 0] }), workingFolder, repos[0]); // TODO multiple repos
 }
 
-function runScript(logger, cwd, script) {
+function runScript(logger, cwd, env, script) {
   return new Promise((resolve, reject) => {
     logger.info({ cwd, script }, 'Start to run script under working directory');
-    const exec = childProcess.exec(script, { cwd });
+    logger.trace({ env }, 'Run script with environment variables');
+    const exec = childProcess.exec(script, { cwd, env });
     exec.stdout.pipe(process.stdout);
     exec.stderr.pipe(process.stderr);
     exec.on('error', reject);
@@ -51,19 +52,19 @@ function runScript(logger, cwd, script) {
   });
 }
 
-function runScripts(logger, workingFolder, scripts) {
+function runScripts(logger, workingFolder, env, scripts) {
   var lastScript = Promise.resolve(); // eslint-disable-line no-var
 
   scripts.forEach((script, index) => {
     const childLogger = logger.child({ _runScripts: ['runScript', index] });
     const patchedScript = script.replace(/\$\{HOST_DIR\}/g, JSON.stringify(process.cwd()));
-    lastScript = lastScript.then(() => runScript(childLogger, workingFolder, patchedScript));
+    lastScript = lastScript.then(() => runScript(childLogger, workingFolder, env, patchedScript));
   });
 
   return lastScript;
 }
 
-function runBatch(logger, workingFolder, packageName, batch) {
+function runBatch(logger, workingFolder, env, packageName, batch) {
   const repo = batch.repo;
   logger.info({ repo }, 'Run batch for repo');
 
@@ -74,11 +75,11 @@ function runBatch(logger, workingFolder, packageName, batch) {
   const cwd = path.resolve(workingFolder, repoName);
   logger.info({ cwd }, 'Working directory for batch');
 
-  return runScripts(logger.child({ _runBatch: 'runScripts' }), cwd, scripts);
+  return runScripts(logger.child({ _runBatch: 'runScripts' }), cwd, env, scripts);
 }
 
-function runBatches(logger, workingFolder, packageName, batches) {
-  return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), workingFolder, packageName, batches[0]); // TODO multiple repos
+function runBatches(logger, workingFolder, env, packageName, batches) {
+  return runBatch(logger.child({ _runBatches: ['runBatch', 0] }), workingFolder, env, packageName, batches[0]); // TODO multiple repos
 }
 
 function dependentBuild(logger, folderPath) {
@@ -111,9 +112,14 @@ function dependentBuild(logger, folderPath) {
   const batches = repos.map(repo => ({ repo, scripts: config[repo] }));
   logger.trace({ batches }, 'Arrange config to batches (repo-scripts pairs)');
 
+  const hostBinDir = path.resolve(rootFolder, './node_modules/.bin');
+  const envPath = `${process.env.PATH}${path.delimiter}${hostBinDir}`;
+  const env = Object.assign({ PATH: envPath }, process.env);
+  logger.debug({ envPath, hostBinDir }, 'Construct environment path variable');
+
   return createFolder(logger.child({ _dependentBuild: 'createFolder' }), workingFolder)
     .then(() => cloneRepos(logger.child({ _dependentBuild: 'cloneRepos' }), workingFolder, repos))
-    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), workingFolder, packageName, batches));
+    .then(() => runBatches(logger.child({ _dependentBuild: 'runBatches' }), workingFolder, env, packageName, batches));
 }
 
 module.exports = dependentBuild;
