@@ -75,7 +75,7 @@ function runScripts({ logger, dependentDir, hostDir, env, scripts }) {
   return lastScript;
 }
 
-function runBatch({ logger, repoDir, hostDir, env, packageName, batch }) {
+function runBatch({ logger, repoDir, hostDir, env, batch }) {
   const dependent = batch.repo;
   logger.info({ dependent }, 'Run batch for dependent project');
 
@@ -95,13 +95,12 @@ function runBatch({ logger, repoDir, hostDir, env, packageName, batch }) {
   });
 }
 
-function runBatches({ logger, repoDir, hostDir, env, packageName, batches }) {
+function runBatches({ logger, repoDir, hostDir, env, batches }) {
   return runBatch({
     logger: logger.child({ _runBatches: ['runBatch', 0] }),
     repoDir,
     hostDir,
     env,
-    packageName,
     batch: batches[0],
   }); // TODO multiple repos
 }
@@ -112,11 +111,6 @@ function dependentBuild(logger, hostPath) {
 
   const hostDir = path.resolve(currentDir, hostPath);
   logger.info({ hostDir }, 'Host project directory');
-
-  // TODO optimize on readFileSync
-  const packageFilePath = path.resolve(hostDir, 'package.json');
-  const packageName = JSON.parse(fs.readFileSync(packageFilePath)).name;
-  logger.info({ packageName }, 'Host project package name');
 
   const repoDir = path.resolve(hostDir, 'dependent-build');
   logger.debug({ repoDir }, 'Dependent-build repo directory');
@@ -153,7 +147,6 @@ function dependentBuild(logger, hostPath) {
     repoDir,
     hostDir,
     env,
-    packageName,
     batches,
   }));
 }
