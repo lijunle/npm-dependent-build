@@ -58,8 +58,16 @@ function runScript({ logger, dependentDir, env, script }) {
   });
 }
 
-function runScripts({ logger, dependentDir, hostDir, env, scripts }) {
+function runScripts({ logger, dependentDir, hostDir, scripts }) {
   var lastScript = Promise.resolve(); // eslint-disable-line no-var
+
+  const hostBinDir = path.resolve(hostDir, './node_modules/.bin');
+  const dependentBinDir = path.resolve(dependentDir, './node_modules/.bin');
+  logger.debug({ hostBinDir, dependentBinDir }, 'Construct additional environment paths');
+
+  const envPath = `${process.env.PATH}${path.delimiter}${hostBinDir}${path.delimiter}${dependentBinDir}`;
+  const env = Object.assign({ PATH: envPath }, process.env);
+  logger.trace({ envPath }, 'The environment path variable passed to run script');
 
   scripts.forEach((script, index) => {
     const childLogger = logger.child({ _runScripts: ['runScript', index] });
@@ -75,7 +83,7 @@ function runScripts({ logger, dependentDir, hostDir, env, scripts }) {
   return lastScript;
 }
 
-function runBatch({ logger, repoDir, hostDir, env, batch }) {
+function runBatch({ logger, repoDir, hostDir, batch }) {
   const dependent = batch.repo;
   logger.info({ dependent }, 'Run batch for dependent project');
 
@@ -90,17 +98,15 @@ function runBatch({ logger, repoDir, hostDir, env, batch }) {
     logger: logger.child({ _runBatch: 'runScripts' }),
     dependentDir,
     hostDir,
-    env,
     scripts,
   });
 }
 
-function runBatches({ logger, repoDir, hostDir, env, batches }) {
+function runBatches({ logger, repoDir, hostDir, batches }) {
   return runBatch({
     logger: logger.child({ _runBatches: ['runBatch', 0] }),
     repoDir,
     hostDir,
-    env,
     batch: batches[0],
   }); // TODO multiple repos
 }
@@ -130,11 +136,6 @@ function dependentBuild(logger, hostPath) {
   const batches = repos.map(repo => ({ repo, scripts: config[repo] }));
   logger.trace({ batches }, 'Arrange config to batches (repo-scripts pairs)');
 
-  const hostBinDir = path.resolve(hostDir, './node_modules/.bin');
-  const envPath = `${process.env.PATH}${path.delimiter}${hostBinDir}`;
-  const env = Object.assign({ PATH: envPath }, process.env);
-  logger.debug({ envPath, hostBinDir }, 'Construct environment path variable');
-
   return createFolder({
     logger: logger.child({ _dependentBuild: 'createFolder' }),
     folder: repoDir,
@@ -146,7 +147,6 @@ function dependentBuild(logger, hostPath) {
     logger: logger.child({ _dependentBuild: 'runBatches' }),
     repoDir,
     hostDir,
-    env,
     batches,
   }));
 }
