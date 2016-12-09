@@ -3,14 +3,21 @@ const path = require('path');
 const yaml = require('js-yaml');
 const childProcess = require('child_process');
 
-function createFolder({ logger, folder }) {
+function createFolder(argv) {
+  const logger = argv.logger;
+  const folder = argv.folder;
+
   return new Promise((resolve, reject) => {
     logger.debug({ folder }, 'Create folder');
     fs.mkdir(folder, error => (error ? reject(error) : resolve()));
   });
 }
 
-function cloneRepo({ logger, workingFolder, repo }) {
+function cloneRepo(argv) {
+  const logger = argv.logger;
+  const workingFolder = argv.workingFolder;
+  const repo = argv.repo;
+
   return new Promise((resolve, reject) => {
     logger.info({ workingFolder, repo }, 'Git clone repo start');
 
@@ -28,7 +35,11 @@ function cloneRepo({ logger, workingFolder, repo }) {
   });
 }
 
-function cloneRepos({ logger, repoDir, repos }) {
+function cloneRepos(argv) {
+  const logger = argv.logger;
+  const repoDir = argv.repoDir;
+  const repos = argv.repos;
+
   // TODO multiple repos
   return cloneRepo({
     logger: logger.child({ _cloneRepos: ['cloneRepo', 0] }),
@@ -37,7 +48,12 @@ function cloneRepos({ logger, repoDir, repos }) {
   });
 }
 
-function runScript({ logger, dependentDir, env, script }) {
+function runScript(argv) {
+  const logger = argv.logger;
+  const dependentDir = argv.dependentDir;
+  const env = argv.env;
+  const script = argv.script;
+
   return new Promise((resolve, reject) => {
     logger.info({ script, dependentDir }, 'Start to run script under dependent project directory');
     logger.trace({ env }, 'Run script with environment variables');
@@ -58,8 +74,13 @@ function runScript({ logger, dependentDir, env, script }) {
   });
 }
 
-function runScripts({ logger, dependentDir, hostDir, scripts }) {
+function runScripts(argv) {
   var lastScript = Promise.resolve(); // eslint-disable-line no-var
+
+  const logger = argv.logger;
+  const dependentDir = argv.dependentDir;
+  const hostDir = argv.hostDir;
+  const scripts = argv.scripts;
 
   const hostBinDir = path.resolve(hostDir, './node_modules/.bin');
   const dependentBinDir = path.resolve(dependentDir, './node_modules/.bin');
@@ -83,7 +104,12 @@ function runScripts({ logger, dependentDir, hostDir, scripts }) {
   return lastScript;
 }
 
-function runBatch({ logger, repoDir, hostDir, batch }) {
+function runBatch(argv) {
+  const logger = argv.logger;
+  const repoDir = argv.repoDir;
+  const hostDir = argv.hostDir;
+  const batch = argv.batch;
+
   const dependent = batch.repo;
   logger.info({ dependent }, 'Run batch for dependent project');
 
@@ -102,13 +128,19 @@ function runBatch({ logger, repoDir, hostDir, batch }) {
   });
 }
 
-function runBatches({ logger, repoDir, hostDir, batches }) {
+function runBatches(argv) {
+  const logger = argv.logger;
+  const repoDir = argv.repoDir;
+  const hostDir = argv.hostDir;
+  const batches = argv.batches;
+
+  // TODO multiple repos
   return runBatch({
     logger: logger.child({ _runBatches: ['runBatch', 0] }),
     repoDir,
     hostDir,
     batch: batches[0],
-  }); // TODO multiple repos
+  });
 }
 
 function dependentBuild(logger, hostPath) {
