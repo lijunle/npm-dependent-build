@@ -38,6 +38,27 @@ function filter(value) {
     .join('\n');
 }
 
+function buildCallstack(value) {
+  var result = '    _callstack: dependentBuild'; // eslint-disable-line no-var
+  var currentTag = '_dependentBuild'; // eslint-disable-line no-var
+
+  while (value[currentTag]) {
+    var nextTag = value[currentTag]; // eslint-disable-line no-var,vars-on-top
+    if (typeof nextTag === 'string') {
+      result += `|${nextTag}`;
+      currentTag = `_${nextTag}`;
+    } else if (nextTag instanceof Array) {
+      result += `|${nextTag.join()}`;
+      currentTag = `_${nextTag[0]}`;
+    } else {
+      // invalid type
+      break;
+    }
+  }
+
+  return result;
+}
+
 function formatter(value) {
   const timeISO = new Date(value.time).toISOString();
   const timeLeft = chalk.magenta('[');
@@ -46,10 +67,11 @@ function formatter(value) {
 
   const level = levels[value.level];
   const message = chalk.cyan(value.msg);
+  const callstack = buildCallstack(value);
   const details = value.type === 'Error' ? withSpaces(value.stack) : filter(value);
   const detailsBreak = details ? '\n' : '';
 
-  return `${time} ${level} ${message}${detailsBreak}${details}`;
+  return `${time} ${level} ${message}\n${callstack}${detailsBreak}${details}`;
 }
 
 const pretty = pino.pretty({ formatter });
