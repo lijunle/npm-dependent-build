@@ -50,12 +50,11 @@ function cloneRepos(argv) {
   const repoDir = argv.repoDir;
   const repos = argv.repos;
 
-  // TODO multiple repos
-  return cloneRepo({
-    logger: logger.child({ _cloneRepos: ['cloneRepo', 0] }),
+  return sequencePromise(repos, (repo, index) => cloneRepo({
+    logger: logger.child({ _cloneRepos: ['cloneRepo', index] }),
     workingFolder: repoDir,
-    repo: repos[0],
-  });
+    repo,
+  }));
 }
 
 function runScript(argv) {
@@ -140,13 +139,12 @@ function runBatches(argv) {
   const hostDir = argv.hostDir;
   const batches = argv.batches;
 
-  // TODO multiple repos
-  return runBatch({
-    logger: logger.child({ _runBatches: ['runBatch', 0] }),
+  return sequencePromise(batches, (batch, index) => runBatch({
+    logger: logger.child({ _runBatches: ['runBatch', index] }),
     repoDir,
     hostDir,
-    batch: batches[0],
-  });
+    batch,
+  }));
 }
 
 function dependentBuild(logger, hostPath) {
