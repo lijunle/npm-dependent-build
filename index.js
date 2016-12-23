@@ -3,6 +3,16 @@ const path = require('path');
 const yaml = require('js-yaml');
 const childProcess = require('child_process');
 
+function sequencePromise(array, toPromise) {
+  var last = Promise.resolve(); // eslint-disable-line no-var
+
+  array.forEach((item, index) => {
+    last = last.then(() => toPromise(item, index));
+  });
+
+  return last;
+}
+
 function createFolder(argv) {
   const logger = argv.logger;
   const folder = argv.folder;
@@ -75,8 +85,6 @@ function runScript(argv) {
 }
 
 function runScripts(argv) {
-  var lastScript = Promise.resolve(); // eslint-disable-line no-var
-
   const logger = argv.logger;
   const dependentDir = argv.dependentDir;
   const hostDir = argv.hostDir;
@@ -90,18 +98,16 @@ function runScripts(argv) {
   const env = Object.assign({ PATH: envPath }, process.env);
   logger.trace({ envPath }, 'The environment path variable passed to run script');
 
-  scripts.forEach((script, index) => {
+  return sequencePromise(scripts, (script, index) => {
     const childLogger = logger.child({ _runScripts: ['runScript', index] });
     const patchedScript = script.replace(/\$\{HOST_DIR\}/g, JSON.stringify(hostDir));
-    lastScript = lastScript.then(() => runScript({
+    return runScript({
       logger: childLogger,
       dependentDir,
       env,
       script: patchedScript,
-    }));
+    });
   });
-
-  return lastScript;
 }
 
 function runBatch(argv) {
